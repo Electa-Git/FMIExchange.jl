@@ -1,0 +1,6 @@
+loadFile(getModelicaPath()+"Modelica/package.mo");
+loadFile(getModelicaPath()+"Buildings/package.mo");
+loadFile(getModelicaPath()+"IDEAS/package.mo");
+loadFile(getModelicaPath()+"MoPED/package.mo");
+loadFile("MoPED.Electrical.Storage.StorageSubsystem.mo");
+buildModelFMU(MoPED.Electrical.Storage.StorageSubsystem, "2.0", "me_cs");

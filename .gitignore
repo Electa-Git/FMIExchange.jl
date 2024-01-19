@@ -1,0 +1,9 @@
+*.fmu
+/deps/build/
+/deps/build.log
+deps/fmu
+Manifest.toml
+/docs/build
+*_render.svg
+/docs/src/graphics/simulation.svg
+/docs/src/graphics/workflow.svg
