@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorials · FMIExchange.jl</title><meta name="title" content="Tutorials · FMIExchange.jl"/><meta property="og:title" content="Tutorials · FMIExchange.jl"/><meta property="twitter:title" content="Tutorials · FMIExchange.jl"/><meta name="description" content="Documentation for FMIExchange.jl."/><meta property="og:description" content="Documentation for FMIExchange.jl."/><meta property="twitter:description" content="Documentation for FMIExchange.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">FMIExchange.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">FMIExchange.jl</a></li><li class="is-active"><a class="tocitem" href>Tutorials</a><ul class="internal"><li><a class="tocitem" href="#Simulating-an-FMU"><span>Simulating an FMU</span></a></li><li><a class="tocitem" href="#Mixed-Native-ODEs-and-FMUs"><span>Mixed Native ODEs and FMUs</span></a></li></ul></li><li><a class="tocitem" href="../Defining_and_Simulating_Models_short/">Defining and Simulating Models</a></li><li><a class="tocitem" href="../reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorials</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorials</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/Electa-Git/FMIExchange.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/Electa-Git/FMIExchange.jl/blob/main/docs/src/tutorial.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorials"><a class="docs-heading-anchor" href="#Tutorials">Tutorials</a><a id="Tutorials-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorials" title="Permalink"></a></h1><h2 id="Simulating-an-FMU"><a class="docs-heading-anchor" href="#Simulating-an-FMU">Simulating an FMU</a><a id="Simulating-an-FMU-1"></a><a class="docs-heading-anchor-permalink" href="#Simulating-an-FMU" title="Permalink"></a></h2><p>In this example, we will simulate an FMU of a ball bouncing around in a 2D space. The ball has a radius of 0.1 and the 2D space is given by by <span>$[0.0, 1.0] \times [0.0, \infty[$</span></p><p>For this tutorial we will need <a href="https://docs.sciml.ai/OrdinaryDiffEq/stable/">OrdinaryDiffEq.jl</a> to run the simulation and <a href="https://docs.juliaplots.org/stable/">Plots.jl</a> for visualisation.</p><pre><code class="language-julia hljs">using FMIExchange
+using OrdinaryDiffEq
+using Plots</code></pre><p>To initialise the FMU, we must provide the path to the FMU, its inputs, outputs and states and the simulation start and stop times. If we wish to change the parameters of the FMU we can do this by providing a dictionary of parameter-value pairs.</p><pre><code class="language-julia hljs">bbloc = joinpath(&quot;deps&quot;, &quot;fmu&quot;, &quot;BouncingBall2D.fmu&quot;) # fmu file location
+bbstart = 0.0 # simulation start
+bbstop = 10.0 # simulation stop
+bbins = String[] # FMU inputs (this FMU has none)
+bbouts = String[] # FMU outputs (this FMU has none)
+bbstates = [&quot;dx&quot;, &quot;dy&quot;, &quot;x&quot;, &quot;y&quot;] # FMU states
+bbparameters = Dict(&quot;eps&quot;=&gt;1e-2) # FMU parameters (optional)</code></pre><p>We then instantiate the FMU as a <code>CachedFMU2</code> (the name <code>CachedFMU2</code> is to avoid naming conflicts with related packages). To simulate the FMU, we need to convert it to an <code>AbstractSimModel</code>. Simulation models can be directly simulated with <a href="https://docs.sciml.ai/OrdinaryDiffEq/stable/">OrdinaryDiffEq.jl</a>. In this example we use the <code>CachedModel</code> simulation model, which contains preallocated caches to make calls to the FMU faster.</p><pre><code class="language-julia hljs">fmu = CachedFMU2(bbloc, bbstart, bbstop, bbins, bbouts, bbstates, bbparameters)
+model = CachedModel(fmu)</code></pre><p>Let&#39;s simulate the FMU with the default solver.</p><pre><code class="language-julia hljs">u0 = [1.0, 0.0, 0.5, 1.0]
+p0 = Float64[]
+tspan = (bbstart, bbstop)
+
+sol = solve(
+    ODEProblem(model, u0, tspan, p0),
+    AutoTsit5(Rosenbrock23(autodiff=false)),
+)
+plot(sol, idxs=(3,4), legend=false)</code></pre><p><img src="../nocb.png" alt/></p><p>That doesn&#39;t look right: the ball does not bounce when it hits the ground or the wall. There is a simple reason for this: we forgot to include callbacks to handle the FMU events. FMIExchange.jl can automatically generate the required callbacks. If we include them, the ball behaves as expected.</p><pre><code class="language-julia hljs">cbs = get_callbacks(model, bbstart, bbstop)
+sol = solve(
+    ODEProblem(model, u0, tspan, p0),
+    AutoTsit5(Rosenbrock23(autodiff=false)),
+    saveat=bbstart:0.01:bbstop, # for a nicer plot
+    callback=CallbackSet(cbs...)
+)
+plot(sol, idxs=(3,4), legend=false)</code></pre><p><img src="../cb.png" alt/></p><h2 id="Mixed-Native-ODEs-and-FMUs"><a class="docs-heading-anchor" href="#Mixed-Native-ODEs-and-FMUs">Mixed Native ODEs and FMUs</a><a id="Mixed-Native-ODEs-and-FMUs-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-Native-ODEs-and-FMUs" title="Permalink"></a></h2><p>This example will again simulate the bouncing ball FMU, but this time it adds a second ball that is defined by a native Julia ODE.  We will call the balls <code>bb</code> and <code>ss</code> respectively. <code>ss</code> is subject to &quot;screensaver physics&quot;: its speed is constant but <code>ss</code> changes direction when it collides with a wall or with <code>bb</code>. To avoid <code>ss</code> flying away, we restrict it to the <span>$[0, 1] \times [0, 1]$</span> box.</p><p>First, define our bouncing ball FMU <code>bb</code> again (see <a href="#Simulating-an-FMU">Simulating an FMU</a>).</p><pre><code class="language-julia hljs">using FMIExchange
+using LinearAlgebra
+using OrdinaryDiffEq
+using Plots
+
+bbloc = joinpath(&quot;deps&quot;, &quot;fmu&quot;, &quot;BouncingBall2D.fmu&quot;) # fmu file location
+bbstart = 0.0 # simulation start
+bbstop = 10.0 # simulation stop
+bbins = String[] # FMU inputs (this FMU has none)
+bbouts = String[] # FMU outputs (this FMU has none)
+bbstates = [&quot;dx&quot;, &quot;dy&quot;, &quot;x&quot;, &quot;y&quot;] # FMU states
+bb_radius = 0.1
+bbparameters = Dict(&quot;eps&quot;=&gt;1e-2, &quot;r&quot; =&gt; bb_radius) # FMU parameters (optional)</code></pre><p>Now define the physics for <code>ss</code>.</p><pre><code class="language-julia hljs">ss_radius = 0.1
+ymin = xmin = 0.0
+ymax = xmax = 1.0
+# The three statements below are a formality
+ssinputs = [&quot;dxs&quot;, &quot;dys&quot;]
+ssoutputs = String[]
+ssstates = [&quot;xs&quot;, &quot;ys&quot;]
+
+screensaver(du, u, p, t)  = du[:] = p[1:2]
+screencb = VectorContinuousCallback(
+    (out, u, t, integrator) -&gt; begin
+        out[1] = u[1] - (xmin + ss_radius)
+        out[2] = u[1] - (xmax - ss_radius)
+        out[3] = u[2] - (ymin + ss_radius)
+        out[4] = u[2] - (ymax - ss_radius)
+    end,
+    (integrator, idx) -&gt; begin
+        if idx &lt;= 2
+            integrator.p[1] = -integrator.p[1]
+        else
+            integrator.p[2] = -integrator.p[2]
+        end
+    end,
+    4
+)</code></pre><p>Now that we have both models, it&#39;s time to combine them. We wrap <code>ss</code> in a <code>ModelSpecification</code> and <code>bb</code> in an <code>FMUSpecification</code> which will allow us to use FMIExchange.jl&#39;s simulation composition functionality.</p><pre><code class="language-julia hljs">ss_spec = ModelSpecification(ssinputs, ssoutputs, ssstates, screensaver, (args...) -&gt; nothing)
+bb_spec = FMUSpecification(bbins, bbouts, bbstates, bbloc, bbparameters)
+specs = [ss_spec, bb_spec]</code></pre><p>The specifications can be converted to simulation models via the <code>create_model</code> function, which will automatically assign the correct address maps as well.</p><pre><code class="language-julia hljs">models = create_model(specs, start=bbstart, stop=bbstop)
+iomap, umap = address_map(specs)</code></pre><p>Since there are now two objects in our 2D space, we need to define a callback that handles collision between both.</p><pre><code class="language-julia hljs">collision_cb = ContinuousCallback(
+    (u, t, integrator) -&gt; begin
+        (u[umap[&quot;x&quot;]] - u[umap[&quot;xs&quot;]]) ^ 2 + (u[umap[&quot;y&quot;]] - u[umap[&quot;ys&quot;]]) ^ 2 - (ss_radius + bb_radius) ^ 2
+    end,
+    (integrator) -&gt; begin
+        u, p = integrator.u, integrator.p
+
+        # collision line and orthogonal
+        collision_line = normalize([u[umap[&quot;x&quot;]] - u[umap[&quot;xs&quot;]], u[umap[&quot;y&quot;]] - u[umap[&quot;ys&quot;]]])
+        orth = vec(nullspace(collision_line&#39;))
+
+        # velocity vectors of bb and ss
+        vbb = @view(u[[umap[&quot;dx&quot;], umap[&quot;dy&quot;]]])
+        vss = @view(p[[iomap[&quot;dxs&quot;], iomap[&quot;dys&quot;]]])
+
+        # New vectors using dot(a, b) to project two vectors onto each other
+        vbb[:] = abs(dot(collision_line, vbb)) * collision_line + dot(orth, vbb) * orth
+        vss[:] = - abs(dot(collision_line, vss)) * collision_line + dot(orth, vss) * orth
+
+        u_modified!(integrator, true)
+    end
+)</code></pre><details class="admonition is-details"><summary class="admonition-header">Collision Physics</summary><div class="admonition-body"><p>To simulate the collision between <code>ss</code> and <code>bb</code>, we decompose the velocity vector of each into components that are orthogonal and tangential to the collision line (the line between the centers of <code>ss</code> and <code>bb</code>).  The tangential component of <code>bb</code>&#39;s velocity vector will point away from <code>ss</code> after bouncing and vice versa. The orthogonal velocity component remains the same for both.  For simplicity we assume the magnitude of each object&#39;s velocity remains constant.</p></div></details><p>Finally we define initial conditions and simulate the system. One small change compared to the first example, is that we now need to call the <code>dynamics</code> function to obtain our ODEfunction. This is because <code>models</code> is not an <code>AbstractSimModel</code>, but rather a <code>Vector{AbstractSimModel}</code>. <code>dynamics(models)</code> automatically generates an <a href="https://docs.sciml.ai/OrdinaryDiffEq/stable/">OrdinaryDiffEq.jl</a>-compatible function that combines the ODEs of both models.</p><pre><code class="language-julia hljs">u0 = zeros(length(keys(umap)))
+u0[umap[&quot;x&quot;]] = 0.5
+u0[umap[&quot;dx&quot;]] = 0.5
+u0[umap[&quot;y&quot;]] = 1.0
+u0[umap[&quot;dy&quot;]] = 0.0
+u0[umap[&quot;xs&quot;]] = 0.2
+u0[umap[&quot;ys&quot;]] = 0.8
+p0 = Float64[0.2, 0.2]
+tspan = (bbstart, bbstop)
+sol = solve(
+    ODEProblem(dynamics(models), u0, tspan, p0),
+    AutoTsit5(Rosenbrock23(autodiff=false)),
+    callback=CallbackSet(
+        reduce(vcat, get_callbacks.(models, bbstart, bbstop))...,
+        screencb,
+        collision_cb
+    ),
+    dtmax=0.01 # The collision callback may give errors when using large steps
+)</code></pre><p>We can plot the solution as a nice animation.</p><pre><code class="language-julia hljs"># this function was copied from
+# https://discourse.julialang.org/t/plot-a-circle-with-a-given-radius-with-plots-jl/23295
+function circleShape(h, k, r)
+    θ = LinRange(0, 2π, 500)
+    h .+ r * sin.(θ), k .+ r * cos.(θ)
+end
+
+anim = @animate for t = sort(bbstart:0.1:bbstop)
+    plot(sol, idxs=[(umap[&quot;x&quot;], umap[&quot;y&quot;]), (umap[&quot;xs&quot;], umap[&quot;ys&quot;])],
+         tspan=(bbstart, t), xlim=(xmin, xmax), ylim=(ymin, ymax),
+         aspect_ratio=:equal, label=[&quot;bb&quot; &quot;ss&quot;], legend=:topleft
+    )
+    plot!(circleShape(sol(t)[umap[&quot;x&quot;]], sol(t)[umap[&quot;y&quot;]], bb_radius),
+          fill=(0,), color=palette(:default)[1], label=nothing)
+    plot!(circleShape(sol(t)[umap[&quot;xs&quot;]], sol(t)[umap[&quot;ys&quot;]], ss_radius),
+          fill=(0,), color=palette(:default)[2], label=nothing)
+end</code></pre><p><img src="../ss.gif" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« FMIExchange.jl</a><a class="docs-footer-nextpage" href="../Defining_and_Simulating_Models_short/">Defining and Simulating Models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Friday 19 January 2024 14:12">Friday 19 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
