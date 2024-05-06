@@ -4,7 +4,7 @@ batstart = 0.0
 batstop = 7200.0
 control_period = 14.4
 
-batloc = joinpath(@__DIR__, "..", "deps", "fmu", "MoPED.Electrical.Storage.StorageSubsystem.fmu")
+batloc = joinpath(@__DIR__, "..", "deps", "fmu", "StorageSubsystemInstance.fmu")
 batparameters = Dict([
     "BatCap" => 720000,
     "EffBatC" => 0.97,
@@ -19,7 +19,7 @@ batparameters = Dict([
 ])
 batins = [:P_setpoint]
 batouts = [:SoC, :P_ac]
-batstates = ["bat.EneSoC"]
+batstates = ["stoSub.bat.EneSoC"]
 
 batspec = FMUSpecification(batins, batouts, batstates, batloc, batparameters)
 batmodel = create_model(batspec) 
