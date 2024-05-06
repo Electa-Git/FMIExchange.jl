@@ -101,3 +101,8 @@ println(fmi2Load(joinpath(@__DIR__, "..", "..", "deps", "fmu", "BouncingBall2D.f
 </details>
 ```
 The [Modelica implementation of the FMUs](https://github.com/Electa-Git/FMIExchange.jl/tree/main/deps/src) can be found in the [FMIExchange.jl](https://github.com/Electa-Git/FMIExchange.jl/tree/main) repo.
+
+## Compatibility Information
+FMIExchange.jl supports simulating Model Exchange FMUs compatible with FMI 2.0. Since FMIExchange.jl relies on [FMIImport.jl](https://github.com/ThummeTo/FMIImport.jl) to load and handle FMUs, it should be compatible with any FMUs that can be simulated using that package. FMIExchange.jl does not support exporting FMUs.
+
+This package was tested using the tools and FMUs listed under [Reproducibility](##-Reproducibility). The FMUs were created using [OpenModelica](https://openmodelica.org/).
