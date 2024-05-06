@@ -94,7 +94,8 @@ Pkg.status(; mode = PKGMODE_MANIFEST) # hide
 ```
 
 ```@example
-println(strip(read(`omc --version`, String))) # hide
+using FMIImport # hide
+println(fmi2Load(joinpath(@__DIR__, "..", "..", "deps", "fmu", "BouncingBall2D.fmu")).modelDescription.generationTool) # hide
 ```
 ```@raw html
 </details>
