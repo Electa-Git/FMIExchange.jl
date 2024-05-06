@@ -48,3 +48,56 @@ FMIExchange.jl was developed at KU Leuven - Electa by Lucas Bex.
 
 A portion of this package reuses and modifies code from [FMI.jl](https://github.com/ThummeTo/FMI.jl).
 A link to this portion of the code and a list of modifications can be found in FMIExchange.jl's [README](https://github.com/Electa-Git/FMIExchange.jl/blob/main/README.md).
+
+## Reproducibility
+
+```@raw html
+<details><summary>The documentation of this package was built using these direct dependencies,</summary>
+```
+
+```@example
+using Pkg # hide
+Pkg.status() # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>and using this machine and Julia version.</summary>
+```
+
+```@example
+using InteractiveUtils # hide
+versioninfo() # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>A more complete overview of all dependencies and their versions is also provided.</summary>
+```
+
+```@example
+using Pkg # hide
+Pkg.status(; mode = PKGMODE_MANIFEST) # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>The software used to compile the FMUs used in this documentation is</summary>
+```
+
+```@example
+println(strip(read(`omc --version`, String))) # hide
+```
+```@raw html
+</details>
+```
+The [Modelica implementation of the FMUs](https://github.com/Electa-Git/FMIExchange.jl/tree/main/deps/src) can be found in the [FMIExchange.jl](https://github.com/Electa-Git/FMIExchange.jl/tree/main) repo.
