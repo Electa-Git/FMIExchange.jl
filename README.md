@@ -67,9 +67,8 @@ sol = solve(ODEProblem{true}(model, Float64[1.0, 0.0, 0.5, 1.0], (bbstart, bbsto
 FMIExchange.jl can be installed through the Julia package manager as below
 ```julia
 using Pkg
-Pkg.add("https://github.com/Electa-Git/FMIExchange.jl")
+Pkg.add("FMIExchange.jl")
 ```
-Currently, FMIExchange.jl is not yet added to the general registry, but plans are to change that.
 
 ### Generating Test FMUs
 To run the tests you need to generate the FMUs. 

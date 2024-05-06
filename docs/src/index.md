@@ -21,9 +21,8 @@ Pull requests to make FMIExchange.jl compatible with these packages are welcome!
 FMIExchange.jl can be installed through the Julia package manager as below
 ```julia
 using Pkg
-Pkg.add("https://github.com/Electa-Git/FMIExchange.jl")
+Pkg.add("FMIExchange")
 ```
-Currently, FMIExchange.jl is not yet added to the general registry, but plans are to change that.
 
 ### Generating Test FMUs
 To run the tests you need to generate the FMUs. 
