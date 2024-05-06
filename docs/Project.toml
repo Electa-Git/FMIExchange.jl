@@ -1,5 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FMIExchange = "d0f58030-e4f1-4214-a600-bc055fa6d38e"
+FMIImport = "9fcbc62e-52a0-44e9-a616-1359a0008194"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"

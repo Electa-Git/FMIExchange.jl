@@ -21,9 +21,8 @@ Pull requests to make FMIExchange.jl compatible with these packages are welcome!
 FMIExchange.jl can be installed through the Julia package manager as below
 ```julia
 using Pkg
-Pkg.add("https://github.com/Electa-Git/FMIExchange.jl")
+Pkg.add("FMIExchange")
 ```
-Currently, FMIExchange.jl is not yet added to the general registry, but plans are to change that.
 
 ### Generating Test FMUs
 To run the tests you need to generate the FMUs. 
@@ -48,3 +47,57 @@ FMIExchange.jl was developed at KU Leuven - Electa by Lucas Bex.
 
 A portion of this package reuses and modifies code from [FMI.jl](https://github.com/ThummeTo/FMI.jl).
 A link to this portion of the code and a list of modifications can be found in FMIExchange.jl's [README](https://github.com/Electa-Git/FMIExchange.jl/blob/main/README.md).
+
+## Reproducibility
+
+```@raw html
+<details><summary>The documentation of this package was built using these direct dependencies,</summary>
+```
+
+```@example
+using Pkg # hide
+Pkg.status() # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>and using this machine and Julia version.</summary>
+```
+
+```@example
+using InteractiveUtils # hide
+versioninfo() # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>A more complete overview of all dependencies and their versions is also provided.</summary>
+```
+
+```@example
+using Pkg # hide
+Pkg.status(; mode = PKGMODE_MANIFEST) # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>The software used to compile the FMUs used in this documentation is</summary>
+```
+
+```@example
+using FMIImport # hide
+println(fmi2Load(joinpath(@__DIR__, "..", "..", "deps", "fmu", "BouncingBall2D.fmu")).modelDescription.generationTool) # hide
+```
+```@raw html
+</details>
+```
+The [Modelica implementation of the FMUs](https://github.com/Electa-Git/FMIExchange.jl/tree/main/deps/src) can be found in the [FMIExchange.jl](https://github.com/Electa-Git/FMIExchange.jl/tree/main) repo.
