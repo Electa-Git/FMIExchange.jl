@@ -18,7 +18,7 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
             - name: build
-              uses: ${{ env.REGISTRY }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:pr-1
+              uses: ghcr.io/cas/bex/fmiexchange/pr-1
             - name: Upload artifacts
               uses: actions/upload-artifact@v3
               with:
