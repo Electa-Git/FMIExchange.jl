@@ -3,8 +3,8 @@ FROM ubuntu:latest as setup
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 # Install omc build dependencies
-RUN apt update && \
-    apt install --no-install-recommends -y \
+RUN apt-get update && \
+    apt-get install -y \
     build-essential \
     ccache \
     git \
