@@ -1,0 +1,27 @@
+name: FMUBuild
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+on:
+    push:
+        paths:
+            - 'deps/src'
+            - 'deps/Dockerfile'
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: build
+              uses: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: fmus
+                path: deps/fmu.tar.gz
+
