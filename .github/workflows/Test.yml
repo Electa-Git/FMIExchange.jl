@@ -91,7 +91,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        julia-version: ['lts' 'pre' '1']
+        julia-version: ['lts', 'pre', '1']
         julia-arch: [x64]
         os: [ubuntu-latest]
         experimental: [false]
