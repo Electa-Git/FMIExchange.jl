@@ -12,8 +12,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        julia-version: ['1.6']
-        julia-arch: [x64]
         os: [ubuntu-latest]
         experimental: [false]
     steps:
@@ -93,7 +91,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        julia-version: ['1.6']
+        julia-version: ['lts' 'pre' '1']
         julia-arch: [x64]
         os: [ubuntu-latest]
         experimental: [false]
@@ -104,7 +102,7 @@ jobs:
       - name: "Set up Julia"
         uses: julia-actions/setup-julia@v1
         with:
-          version: '1.6'
+          version: ${{ matrix.julia-version }}
       - uses: actions/cache@v3
         env:
           cache-name: cache-artifacts
