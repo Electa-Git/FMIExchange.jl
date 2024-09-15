@@ -25,7 +25,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: build
-        uses: ${{ docker://ghcr.io/github.repository }}
+        uses: jenseng/dynamic-uses@v1
+        with:
+            uses: docker://ghcr.io/${{ github.repository }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
