@@ -62,6 +62,7 @@ RUN apt-get update && \
     zip
 COPY --from=omc_build /OpenModelica/build_cmake/install_cmake /opt/openmodelica
 RUN ln -s /opt/openmodelica/bin/omc /usr/bin
+ENV OPENMODELICALIBRARY=/root/.openmodelica
 COPY --from=modelica_libs /root/.openmodelica/libraries/Modelica /root/.openmodelica/libraries/Modelica
 COPY --from=modelica_libs /root/.openmodelica/libraries/MoPED /root/.openmodelica/libraries/MoPED
 COPY --from=modelica_libs /root/.openmodelica/libraries/IDEAS /root/.openmodelica/libraries/IDEAS
