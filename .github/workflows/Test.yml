@@ -2,12 +2,23 @@ name: Test
 
 on:
   push:
-    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
 
 jobs:
+  build-fmus:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: build
+        uses: docker://ghcr.io/${{ github.repository }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+            name: fmus
+            path: deps/fmu.tar.gz
   test:
     needs:
       - build-fmus
@@ -40,10 +51,8 @@ jobs:
             ${{ runner.os }}-test-
             ${{ runner.os }}-
       - name: "Download FMUs"
-        uses: dawidd6/action-download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
-          workflow: FMUBuild.yml
-          workflow_conclusion: success
           name: fmus
           path: deps
       - name: "Extract FMUs"
