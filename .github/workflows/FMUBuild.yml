@@ -18,7 +18,7 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
             - name: build
-              uses: ghcr.io/casbex/fmiexchange.jl:pr-1
+              uses: https://ghcr.io/casbex/fmiexchange.jl:pr-1
             - name: Upload artifacts
               uses: actions/upload-artifact@v3
               with:
