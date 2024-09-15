@@ -1,4 +1,3 @@
 loadFile(getModelicaPath()+"Modelica/package.mo");
 loadFile("BouncingBall2D.mo");
-getModelicaPath();
 buildModelFMU(BouncingBall2D, "2.0", "me_cs");

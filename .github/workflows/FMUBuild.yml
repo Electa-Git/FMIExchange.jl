@@ -8,6 +8,9 @@ on:
     push:
         paths:
             - 'deps/src'
+    pull_request:
+        paths:
+            - 'deps/src'
     workflow_dispatch:
     workflow_run:
         workflows: ["Docker"]
@@ -21,7 +24,7 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
             - name: build
-              uses: docker://ghcr.io/casbex/fmiexchange.jl
+              uses: docker://ghcr.io/${{ github.repository }}
             - name: Upload artifacts
               uses: actions/upload-artifact@v3
               with:
