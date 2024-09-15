@@ -25,9 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: build
-        env:
-          DOCKERURL: ${{ github.repository }}
-        uses: docker://ghcr.io/$DOCKERURL
+        uses: ${{ docker://ghcr.io/github.repository }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
