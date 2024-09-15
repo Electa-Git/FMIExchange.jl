@@ -9,6 +9,7 @@ on:
         paths:
             - 'deps/src'
             - 'deps/Dockerfile'
+    pull_request:
     workflow_dispatch:
 
 jobs:
