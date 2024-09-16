@@ -54,7 +54,7 @@ jobs:
       - name: build
         uses: jenseng/dynamic-uses@v1
         with:
-            uses: docker://ghcr.io/${{ github.repository }}:${{ env.dockertag }}
+            uses: docker://ghcr.io/${{ github.repository }}:${{ env.DOCKERTAG }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
