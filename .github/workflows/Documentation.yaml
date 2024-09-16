@@ -38,12 +38,12 @@ jobs:
             # The container image name
             repository: ${{ steps.dockerurl.outputs.lowercase }}
             # The container image tag
-            tag: ${{ github.ref_name }}
+            tag: ${{ github.head_ref || github.ref_name }}
       - id: dockertag
         name: set docker image tag
         env:
             TAGEXISTS: ${{ steps.dockertagexists.outputs.tag }}
-            REFNAME: ${{ github.ref_name }}
+            REFNAME: ${{ github.head_ref || github.ref_name }}
         run: |
             if [ $TAGEXISTS == "found" ];
             then
