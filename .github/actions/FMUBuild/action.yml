@@ -48,7 +48,7 @@ runs:
           uses: docker://ghcr.io/${{ steps.dockerurl.outputs.lowercase }}:${{ env.DOCKERTAG }}
     - name: rename output
       shell: bash
-      run: mv deps/fmu.tar.gz $DST
+      run: mv -n deps/fmu.tar.gz $DST
       env:
         DST: ${{ inputs.file_name }}
     - name: Upload artifacts
