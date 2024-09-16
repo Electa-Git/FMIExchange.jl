@@ -82,7 +82,7 @@ jobs:
           path: deps/
       - name: "Extract FMU artifacts"
         run:
-          tar -xzf deps/fmu.tar.gz -C deps/fmu
+          tar -xzf deps/fmu.tar.gz -C deps
       - name: "Set up Julia"
         uses: julia-actions/setup-julia@v1
         with:
