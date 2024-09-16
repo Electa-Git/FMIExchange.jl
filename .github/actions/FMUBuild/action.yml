@@ -31,6 +31,7 @@ runs:
           tag: ${{ github.head_ref || github.ref_name }}
     - id: dockertag
       name: set docker image tag
+      shell: bash
       env:
           TAGEXISTS: ${{ steps.dockertagexists.outputs.tag }}
           REFNAME: ${{ github.head_ref || github.ref_name }}
@@ -46,6 +47,7 @@ runs:
       with:
           uses: docker://ghcr.io/${{ steps.dockerurl.outputs.lowercase }}:${{ env.DOCKERTAG }}
     - name: rename output
+      shell: bash
       run: mv deps/fmu.tar.gz $DST
       env:
         DST: ${{ inputs.file_name }}
