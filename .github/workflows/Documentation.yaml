@@ -75,13 +75,14 @@ jobs:
       - name: "Extract svgs"
         run:
           tar -xzf docs/src/graphics/svg.tar.gz -C docs/src/graphics
-      - name: "Create FMU directory"
-        run: mkdir deps/fmu
       - name: "Download FMU artifacts"
         uses: actions/download-artifact@v3
         with:
           name: fmus
-          path: deps/fmu
+          path: deps/
+      - name: "Extract FMU artifacts"
+        run:
+          tar -xzf deps/fmu.tar.gz -C deps/fmu
       - name: "Set up Julia"
         uses: julia-actions/setup-julia@v1
         with:
