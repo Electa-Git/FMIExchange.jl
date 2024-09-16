@@ -25,13 +25,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - id: dockerurl
+        name: get docker repo url
         uses: ASzc/change-string-case-action@v1
         with:
           string: ${{ github.repository }}
+      - uses: tyriis/docker-image-tag-exists@v2.0.0
+        id: dockertagexists
+        name: find out if docker tag exists
+        with:
+            # The container image registry
+            registry: ghcr.io
+            # The container image name
+            repository: ${{ steps.dockerurl.outputs.lowercase }}
+            # The container image tag
+            tag: ${{ github.ref_name }}
+      - id: dockertag
+        name: set docker image tag
+        env:
+            TAGEXISTS: ${{ steps.dockertagexists.outputs.tag }}
+            REFNAME: ${{ github.ref_name }}
+        run: |
+            if [ $TAGEXISTS == "found" ];
+            then
+                echo "DOCKERTAG=$REFNAME" >> $GITHUB_ENV;
+            else
+                echo "DOCKERTAG=latest" >> $GITHUB_ENV;
+            fi                              
       - name: build
         uses: jenseng/dynamic-uses@v1
         with:
-            uses: docker://ghcr.io/${{ steps.dockerurl.outputs.lowercase }}
+            uses: docker://ghcr.io/${{ github.repository }}:${{ env.dockertag }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
