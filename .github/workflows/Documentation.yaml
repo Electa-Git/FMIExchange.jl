@@ -29,7 +29,7 @@ jobs:
         uses: ASzc/change-string-case-action@v1
         with:
           string: ${{ github.repository }}
-      - uses: tyriis/docker-image-tag-exists@v2.0.0
+      - uses: tyriis/docker-image-tag-exists@v2.0.1
         id: dockertagexists
         name: find out if docker tag exists
         with:
