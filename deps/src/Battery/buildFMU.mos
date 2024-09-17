@@ -4,3 +4,4 @@ loadFile(getModelicaPath()+"IDEAS/package.mo");
 loadFile(getModelicaPath()+"MoPED/package.mo");
 loadFile("StorageSubsystemInstance.mo");
 buildModelFMU(StorageSubsystemInstance, "2.0", "me_cs");
+getErrorString();
