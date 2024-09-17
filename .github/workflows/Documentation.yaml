@@ -6,6 +6,10 @@ on:
   # trigger from an other action
   repository_dispatch:
     types: [trigger-docu]
+  workflow_run:
+    workflows: [Docker]
+    type:
+      - completed
 
   pull_request:
   push:
