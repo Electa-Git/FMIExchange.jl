@@ -55,7 +55,7 @@ jobs:
           context: .
           file: deps/Dockerfile
           push: true
-          tags: ${{ steps.lowercasetag.outputs.lowercase }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.lowercasetag.outputs.lowercase }}
       
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
