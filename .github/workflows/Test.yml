@@ -2,88 +2,22 @@ name: Test
 
 on:
   push:
-    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Docker]
+    types:
+      - completed
 
 jobs:
   build-fmus:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        julia-version: ['1.6']
-        julia-arch: [x64]
-        os: [ubuntu-latest]
-        experimental: [false]
+    runs-on: ubuntu-latest
     steps:
-      - name: "get omc"
-        run:
-          sudo apt update
-
-          sudo apt install ca-certificates curl gnupg
-
-          sudo curl -fsSL http://build.openmodelica.org/apt/openmodelica.asc | sudo gpg --dearmor -o /usr/share/keyrings/openmodelica-keyring.gpg
-
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/openmodelica-keyring.gpg] https://build.openmodelica.org/apt $(cat /etc/os-release | grep "\(UBUNTU\\|DEBIAN\\|VERSION\)_CODENAME" | sort | cut -d= -f 2 | head -1) stable" | sudo tee /etc/apt/sources.list.d/openmodelica.list
-
-          sudo apt update
-
-          sudo apt install -y --no-install-recommends omc
-      - name: "get Modelica libs"
-        run:
-          git config --global advice.detachedHead false
-
-          git clone https://github.com/lbl-srg/modelica-buildings ~/.openmodelica/libraries/modelica-buildings --branch v9.1.1 --depth 1
-
-          git clone https://github.com/open-ideas/IDEAS ~/.openmodelica/libraries/IDEASlib --branch v3.0 --depth 1
-
-          git clone https://gitlab.kuleuven.be/positive-energy-districts/moped ~/.openmodelica/libraries/moped
-
-          git clone https://github.com/modelica/ModelicaStandardLibrary ~/.openmodelica/libraries/ModelicaStandardLibrary --branch v4.0.0 --single-branch
-
-          mv ~/.openmodelica/libraries/modelica-buildings/Buildings ~/.openmodelica/libraries/
-
-          mv ~/.openmodelica/libraries/IDEASlib/IDEAS ~/.openmodelica/libraries/
-
-          mv ~/.openmodelica/libraries/moped/MoPED ~/.openmodelica/libraries/
-
-          mv ~/.openmodelica/libraries/ModelicaStandardLibrary/Modelica ~/.openmodelica/libraries/
-
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Build step
-        run:
-          cd deps
-
-          mkdir build
-
-          cp src/* build -r
-
-          cd build
-
-          for d in */; do
-          cd $d;
-          omc buildFMU.mos;
-          cd ..;
-          done;
-
-          cd ..
-          
-          mkdir fmu
-
-          find build -iname '*.fmu' -exec mv {} fmu \;
-
-          tar -czf fmu.tar.gz fmu
-
-          cd ..
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: fmus
-          path: deps/fmu.tar.gz
-        
+      - name: build
+        uses: ./.github/actions/FMUBuild
   test:
     needs:
       - build-fmus
@@ -93,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        julia-version: ['1.6']
+        julia-version: ['lts', 'pre', '1']
         julia-arch: [x64]
         os: [ubuntu-latest]
         experimental: [false]
@@ -102,9 +36,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
       - name: "Set up Julia"
-        uses: julia-actions/setup-julia@v1
+        uses: julia-actions/setup-julia@v2
         with:
-          version: '1.6'
+          version: ${{ matrix.julia-version }}
       - uses: actions/cache@v3
         env:
           cache-name: cache-artifacts

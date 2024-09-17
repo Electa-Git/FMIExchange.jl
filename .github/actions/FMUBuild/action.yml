@@ -1,0 +1,69 @@
+name: FMUBuild
+description: Build the FMUs in the FMIExchange.jl repository
+
+inputs:
+  artifact_name:
+    description: "name to make the artifact available"
+    required: true
+    default: fmus
+  file_name:
+    description: "name to give to the fmu tarball"
+    required: true
+    default: deps/fmu.tar.gz
+
+runs:
+  using: "composite"
+  steps:
+    - id: dockerurl
+      name: get docker repo url
+      uses: ASzc/change-string-case-action@v1
+      with:
+        string: ${{ github.actor }}/${{ github.event.repository.name }}
+
+    - uses: tyriis/docker-image-tag-exists@v2.0.1
+      id: dockertagexists
+      name: find out if docker tag exists
+      with:
+          # The container image registry
+          registry: ghcr.io
+          # The container image name
+          repository: ${{ steps.dockerurl.outputs.lowercase }}
+          # The container image tag
+          tag: ${{ github.head_ref || github.ref_name }}
+
+    - id: dockertag
+      name: set docker image tag
+      shell: bash
+      env:
+          TAGEXISTS: ${{ steps.dockertagexists.outputs.tag }}
+          REFNAME: ${{ github.head_ref || github.ref_name }}
+      run: |
+          if [ $TAGEXISTS == "found" ];
+          then
+              echo "DOCKERTAG=$REFNAME" >> $GITHUB_ENV;
+          else
+              echo "DOCKERTAG=latest" >> $GITHUB_ENV;
+          fi                              
+
+    - id: lowercasetag
+      name: "Make the docker tag lower case"
+      uses: ASzc/change-string-case-action@v1
+      with:
+          string: ${{ env.DOCKERTAG }}
+
+    - name: build
+      uses: jenseng/dynamic-uses@v1
+      with:
+          uses: docker://ghcr.io/${{ steps.dockerurl.outputs.lowercase }}:${{ steps.lowercasetag.outputs.lowercase }}
+
+    - name: rename output
+      shell: bash
+      run: mv -n deps/fmu.tar.gz $DST
+      env:
+        DST: ${{ inputs.file_name }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.file_name }}
