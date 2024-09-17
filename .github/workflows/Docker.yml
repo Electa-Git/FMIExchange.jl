@@ -45,6 +45,12 @@ jobs:
                 echo "DOCKERTAG=$REFNAME" >> $GITHUB_ENV;
             fi
 
+      - id: lowercasetag
+        name: Make the docker url lower case
+        uses: ASzc/change-string-case-action@v1
+        with:
+            string: ${{ env.DOCKERTAG }}
+
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
@@ -52,7 +58,7 @@ jobs:
           context: .
           file: deps/Dockerfile
           push: true
-          tags: ${{ env.DOCKERTAG }}
+          tags: ${{ steps.lowercasetag.outputs.lowercase }}
       
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
