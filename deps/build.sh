@@ -13,4 +13,5 @@ mkdir -p fmu
 find build -iname '*.fmu' -exec mv {} fmu \;
 tar -czf fmu.tar.gz fmu
 cd ..
-
+echo "OPENMODELICALIBRARIES=$OPENMODELICALIBRARIES"
+echo "MODELICAPATH=$MODELICAPATH"

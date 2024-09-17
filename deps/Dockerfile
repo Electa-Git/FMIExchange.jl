@@ -38,7 +38,7 @@ RUN git clone --recurse-submodules https://github.com/OpenModelica/OpenModelica.
 
 RUN cd OpenModelica && \
     cmake -S . -B build_cmake -DOM_ENABLE_GUI_CLIENTS=OFF -DOM_OMC_ENABLE_IPOPT=OFF -DOM_OMC_ENABLE_FORTRAN=OFF && \
-    cmake --build build_cmake --target install
+    cmake --build build_cmake --target install --parallel $(nproc)
 
 FROM setup as modelica_libs
 RUN git config --global advice.detachedHead false
@@ -63,8 +63,9 @@ RUN apt-get update && \
 COPY --from=omc_build /OpenModelica/build_cmake/install_cmake /opt/openmodelica
 RUN ln -s /opt/openmodelica/bin/omc /usr/bin
 ENV OPENMODELICALIBRARY=/root/.openmodelica/libraries
-COPY --from=modelica_libs /root/.openmodelica/libraries/Modelica /root/.openmodelica/libraries/Modelica
-COPY --from=modelica_libs /root/.openmodelica/libraries/MoPED /root/.openmodelica/libraries/MoPED
-COPY --from=modelica_libs /root/.openmodelica/libraries/IDEAS /root/.openmodelica/libraries/IDEAS
-COPY --from=modelica_libs /root/.openmodelica/libraries/Buildings /root/.openmodelica/libraries/Buildings
+ENV MODELICAPATH=$OPENMODELICALIBRARY
+COPY --from=modelica_libs /root/.openmodelica/libraries/Modelica /root/.openmodelica/libraries
+COPY --from=modelica_libs /root/.openmodelica/libraries/MoPED /root/.openmodelica/libraries
+COPY --from=modelica_libs /root/.openmodelica/libraries/IDEAS /root/.openmodelica/libraries
+COPY --from=modelica_libs /root/.openmodelica/libraries/Buildings /root/.openmodelica/libraries
 ENTRYPOINT ["deps/build.sh"]
