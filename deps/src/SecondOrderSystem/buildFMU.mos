@@ -1,4 +1,3 @@
 loadFile(getModelicaPath()+"Modelica/package.mo");
 loadFile("SecondOrderPlant.mo");
 buildModelFMU(SecondOrderPlant, "2.0", "me_cs");
-getErrorString();
