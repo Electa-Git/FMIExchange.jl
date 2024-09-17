@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.actor }}/${{ github.event.repository.name }}
+  IMAGE_NAME: fmiexchange.jl
 
 jobs:
   build-and-push-image:
@@ -34,19 +34,23 @@ jobs:
         shell: bash
         env:
             REFNAME: ${{ github.head_ref || github.ref_name }}
+            ACTOR: ${{ github.actor }}
+            REPOSITORY_OWNER: ${{ github.repository_owner }}
         run: |
             if [ $REFNAME == "main" ]
             then
                 echo "DOCKERTAG=latest" >> $GITHUB_ENV;
+                echo "IMAGE_PREFIX=$REPOSITORY_OWNER" >> $GITHUB_ENV;
             else
                 echo "DOCKERTAG=$REFNAME" >> $GITHUB_ENV;
+                echo "IMAGE_PREFIX=$ACTOR" >> $GITHUB_ENV;
             fi
 
       - id: lowercasetag
         name: Make the docker url lower case
         uses: ASzc/change-string-case-action@v1
         with:
-            string: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DOCKERTAG }}
+            string: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ env.IMAGE_NAME }}:${{ env.DOCKERTAG }}
 
       - name: Build and push Docker image
         id: push
