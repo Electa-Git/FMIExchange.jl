@@ -71,6 +71,7 @@ Pkg.add("FMIExchange.jl")
 ```
 
 ### Generating Test FMUs
+#### Locally
 To run the tests you need to generate the FMUs. 
 This requires OpenModelica to be installed and the compiler `omc` to be available in your `PATH` variable.
 The [Modelica Standard Library](https://github.com/modelica/ModelicaStandardLibrary), [Buildings](https://github.com/lbl-srg/modelica-buildings), [IDEAS](https://github.com/open-ideas/IDEAS) and [MoPED](https://gitlab.kuleuven.be/positive-energy-districts/moped.git) libraries should be available in your Modelica path.
@@ -81,6 +82,18 @@ getModelicaPath()
 ```
 and running it with `omc`.
 On Linux, the result is `~/.openmodelica/libraries`.
+#### Using Docker
+Newer versions of OpenModelica have been found to generate faulty FMUs. 
+The [Dockerfile](./deps/Dockerfile) contains a static OpenModelica version (built from source) which can be used to compile the FMUs in this repo.
+```bash
+# pull image from the github repository
+$ docker pull ghcr.io/electa-git/fmiexchange.jl:latest
+$ docker tag ghcr.io/electa-git/fmiexchange.jl:latest fmiexchange.jl:latest
+# OR build the image yourself
+$ docker build deps -t fmiexchange.jl:latest
+# Run the image
+$ docker run -v ./deps:/deps:Z -it fmiexchange.jl:latest
+```
 
 ### Running Tests Without Generating FMUs
 It is possible to download the compiled FMUs from the Github workflow runs of this repository if the artifacts are still available on Github.
