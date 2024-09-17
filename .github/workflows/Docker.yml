@@ -46,7 +46,7 @@ jobs:
         name: Make the docker url lower case
         uses: ASzc/change-string-case-action@v1
         with:
-            string: ${{ env.DOCKERTAG }}
+            string: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DOCKERTAG }}
 
       - name: Build and push Docker image
         id: push
@@ -55,7 +55,7 @@ jobs:
           context: .
           file: deps/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.lowercasetag.outputs.lowercase }}
+          tags: ${{ steps.lowercasetag.outputs.lowercase }}
       
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
