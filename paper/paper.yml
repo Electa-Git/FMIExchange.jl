@@ -1,0 +1,20 @@
+title: "FMIExchange.jl: Foreign Models Through a Familiar Interface"
+keywords:
+  - Julia
+  - Differential equation
+  - Functional Mock-up Interface
+  - Simulation
+authors:
+  - name: Lucas Bex
+    orcid: 0000-0003-0614-7225
+    affiliation: 1, 2
+  - name: Geert Deconinck
+    orcid: 0000-0002-2225-3987
+    affiliation: 1, 2
+affiliations:
+  - name: dept. of Electrical Engineering - KU Leuven
+    index: 1
+  - name: EnergyVille
+    index: 2
+date: 23 October 2024
+bibliography: ref.bib
