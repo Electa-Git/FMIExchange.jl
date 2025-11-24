@@ -31,42 +31,38 @@ struct CachedFMU2{R}
 end
 
 function CachedFMU2(
-    fmuloc::String,
-    start::Real,
-    stop::Real,
-    ins::AbstractVector,
-    outs::AbstractVector,
-    staterefs::AbstractVector,
-    parameters::Union{Dict,Nothing}=nothing
+        fmuloc::String,
+        start::Real,
+        stop::Real,
+        ins::AbstractVector,
+        outs::AbstractVector,
+        staterefs::AbstractVector,
+        parameters::Union{Dict, Nothing} = nothing
     )
-    fmu = fmi2Load(fmuloc)
+    fmu = loadFMU(fmuloc, type = :ME)
     fmu.executionConfig.concat_eval = false
     fmu.executionConfig.inplace_eval = true
-    fmu.handleEventIndicators = UInt64.(1:fmu.modelDescription.numberOfEventIndicators)
+    fmu.handleEventIndicators = UInt32.(1:fmu.modelDescription.numberOfEventIndicators)
 
     # In the current version of FMIImport, this function is not type-stable, PR has been sent
-    _fmustaterefs = fmi2StringToValueReference(fmu.modelDescription, String.(staterefs))
-    _fmuivalrefs = fmi2StringToValueReference(fmu.modelDescription, String.(ins))
-    _fmuovalrefs = fmi2StringToValueReference(fmu.modelDescription, String.(outs))
-    common_type = Vector{typeintersect(typeintersect(eltype(_fmustaterefs), eltype(_fmuivalrefs)),
-                                eltype(_fmuovalrefs))}
+    _fmustaterefs = stringToValueReference(fmu.modelDescription, String.(staterefs))
+    _fmuivalrefs = stringToValueReference(fmu.modelDescription, String.(ins))
+    _fmuovalrefs = stringToValueReference(fmu.modelDescription, String.(outs))
+    common_type = Vector{
+        typeintersect(
+            typeintersect(eltype(_fmustaterefs), eltype(_fmuivalrefs)),
+            eltype(_fmuovalrefs)
+        ),
+    }
     fmustaterefs, fmuivalrefs, fmuovalrefs = convert.(common_type, (_fmustaterefs, _fmuivalrefs, _fmuovalrefs))
 
     c, _ = prepareSolveFMU(
         fmu,
         nothing,
         fmi2TypeModelExchange,
-        nothing,
-        nothing,
-        nothing,
-        nothing,
-        nothing,
-        parameters,
-        start,
-        stop,
-        nothing; x0=nothing,
-        inputs=nothing,
-        handleEvents=handleEvents
+        parameters = parameters,
+        t_start = start,
+        t_stop = stop,
     )
     fmu.hasStateEvents = fmu.modelDescription.numberOfEventIndicators > 0
     fmu.hasTimeEvents = c.eventInfo.nextEventTimeDefined == fmi2True
@@ -74,8 +70,8 @@ function CachedFMU2(
 end
 
 function (fmu::CachedFMU2)(dx, x, u, y, t)
-    fmu.c(;y=y, y_refs=fmu.output_value_references, x=x, u=u, u_refs=fmu.input_value_references, t=t)
-    fmu.c(;dx=dx, x=x, u=u, u_refs=fmu.input_value_references, t=t)
+    fmu.c(; y = y, y_refs = fmu.output_value_references, x = x, u = u, u_refs = fmu.input_value_references, t = t)
+    fmu.c(; dx = dx, x = x, u = u, u_refs = fmu.input_value_references, t = t)
 end
 
 input_size(fmu::CachedFMU2) = length(fmu.input_value_references)
@@ -93,7 +89,7 @@ function condition!(out, fmu::CachedFMU2, x, u, t)
     condition!(out, fmu.c, x, u, t, fmu.input_value_references)
 end
 
-function stepCompleted!(dst, fmu::CachedFMU2, x,  u, t)
+function stepCompleted!(dst, fmu::CachedFMU2, x, u, t)
     stepCompleted!(dst, fmu.c, x, u, t, fmu.input_value_references)
 end
 
