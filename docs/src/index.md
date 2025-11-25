@@ -95,7 +95,7 @@ Pkg.status(; mode = PKGMODE_MANIFEST) # hide
 
 ```@example
 using FMIImport # hide
-println(fmi2Load(joinpath(@__DIR__, "..", "..", "deps", "fmu", "BouncingBall2D.fmu")).modelDescription.generationTool) # hide
+println(loadFMU(joinpath(@__DIR__, "..", "..", "deps", "BouncingBall2D.fmu")).modelDescription.generationTool) # hide
 ```
 ```@raw html
 </details>
