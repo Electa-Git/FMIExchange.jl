@@ -22,8 +22,6 @@ jobs:
     needs:
       - build-fmus
     runs-on: ${{ matrix.os }}
-    env:
-      JULIA_NUM_THREADS: $(nproc)
     strategy:
       fail-fast: false
       matrix:
@@ -50,7 +48,7 @@ jobs:
             ${{ runner.os }}-test-
             ${{ runner.os }}-
       - name: "Download FMUs"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: fmus
           path: deps

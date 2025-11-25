@@ -56,7 +56,7 @@ jobs:
           cd ../../..
           
       - name: "Upload artifacts"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: svgs
           path: docs/src/graphics/svg.tar.gz
@@ -66,13 +66,11 @@ jobs:
     needs:
       - render
       - build-fmus
-    env:
-      JULIA_NUM_THREADS: $(nproc)
     steps:
       - name: "Check out repository"
         uses: actions/checkout@v3
       - name: "Download svg artifacts"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: svgs
           path: docs/src/graphics
@@ -80,7 +78,7 @@ jobs:
         run:
           tar -xzf docs/src/graphics/svg.tar.gz -C docs/src/graphics
       - name: "Download FMU artifacts"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: fmus
           path: deps/
