@@ -1,4 +1,3 @@
-*.fmu
 /deps/build/
 /deps/build.log
 deps/fmu

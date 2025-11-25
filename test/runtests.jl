@@ -4,6 +4,7 @@ using OrdinaryDiffEq
 using DiffEqCallbacks
 using DelimitedFiles
 using Interpolations
+import ADTypes
 
 if !isdir(joinpath(@__DIR__, "..", "deps", "fmu"))
     @info "Compiling FMUs for native architecture"
