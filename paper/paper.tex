@@ -10,7 +10,7 @@
 \hypersetup{colorlinks}
 
 \usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta, fit}
+\usetikzlibrary{positioning, arrows.meta, fit, calc}
 
 \begin{document}
 
@@ -19,50 +19,52 @@
 \maketitle
 
 \begin{abstract}
-
 The Functional Mock-up Interface (FMI) standard \cite{modelicaassociation} facilitates interoperability of differential algebraic equation (DAE) simulation software.
-Compliant DAE models (so-called Functional Mock-up Units (FMUs)) can be simulated through a standardized interface, which allows to easily exchange these models between different software tools.
+Compliant models (so-called Functional Mock-up Units (FMUs)) can be simulated through a standardized interface, which allows to easily exchange these models between different software tools.
 The Julia ecosystem contains an extensive FMI package suite that supports (among others) simulation, import, export and differentiation of FMUs.
-This paper presents FMIExchange.jl, which complements existing FMI packages by interfacing FMUs with the popular DifferentialEquations.jl package \cite{rackauckas2017}.
-Additionally, FMIExchange.jl provides tools to compose simulations containing multiple FMUs and native Julia models.
-
+This paper presents FMIExchange.jl, which provides utilities to simplify interfacing FMUs with the popular DifferentialEquations.jl package \cite{rackauckas2017}.
+Additionally, FMIExchange.jl provides tools to compose simulations combining multiple FMUs and native Julia models.
 \end{abstract}
 
 \section{Statement of Need}
-An FMU (\cref{fig:FMU}) transforms a DAE with events\footnote{Events here signify discontinuities in the solution: time-based events are discontinuities at fixed times, typically implemented through discrete callbacks in DifferentialEquations.jl; state-based events depend on the integrated quantities and are typically implemented with continuous callbacks.} \cref{eq:DAE} into an ordinary differential equation (ODE) with events \cref{eq:ODE}.
+The Functional Mock-up Interface (FMI) standard \cite{modelicaassociation} presents a standardised software interface for simulating an ordinary differential equation (ODE) with events to enhance interoperability of simulation and modelling tools.
+Many differential algebraic equation (DAE) modelling tools have the possibility to export models (after transformation to an ODE) to Functional Mock-Up Units (FMU, \cref{fig:FMU}), which comply with this interface.
 
-In addition to the states $u$ and inputs $p_i$ required for simulating the model, the FMU can define arbitrary outputs $p_o$ \cref{eq:output} that are exposed to the user.
-Two types of FMU are available: Co-Simulation FMUs only expose inputs and outputs and come bundled with an integrator and event handler, Model Exchange (ME-)FMUs require an external ODE integrator/event handler and expose all quantities; this text focuses on ME-FMUs.
+FMUs define a set of states states $u$ and inputs $p_i$ required for simulating the model \cref{eq:ODE}, as well as a set of outputs $p_o$ \cref{eq:output} which are exposed to the user.
+FMUs may contain events, that cause discontinuouties in the solution of the ODE.
+Events may trigger at fixed times or whenever the state/inputs fulfil some condition.
+Three types of FMU are available: Co-Simulation FMUs only expose inputs and outputs and come bundled with an integrator and event handler, Model Exchange (ME-)FMUs require an external ODE integrator/event handler and expose all quantities, Scheduled Execution FMUs expose model partitions, algorithms to compute quantities of interest, and require a scheduler to trigger execution of these model partitions; this text focuses on ME-FMUs.
 \begin{align}
-F(\dot{u}, u, p_{i}, t) &= 0 && \mathrm{events}\label{eq:DAE}\\
-f(u, p_{i}, t) &= \dot{u} && \mathrm{events}\label{eq:ODE}\\
+f(u, p_{i}, t) &= \dot{u} \label{eq:ODE}\\
 g(u, p_{i}, t) &= p_o \label{eq:output}
 \end{align}
 
 \begin{figure}
   \center
 \begin{tikzpicture}[node distance=0.5cm, >={Stealth[round]}]
-  \node (FMU) [draw=black, label=above:FMU, minimum width=5cm] {$\begin{aligned}
-    0 &= F(\dot{u}, u, p_i, t)\\
+  \node (FMUeq) [draw=black] {$\begin{aligned}
+    \dot{u} &= f(u, p_{i}, t) \\
     p_o &= g(u, p_i, t)
   \end{aligned}$};
+\node (CS) [right=1cm of FMUeq.north east, anchor = north west, draw=black, label={[name=CSL]below:\footnotesize Co-Simulation}] {\shortstack{Internal\\Solver}};
+  \node (FMU) [draw=black, label=above:FMU, minimum width=5cm, fit=(FMUeq) (CS) (CSL)] {};
 \node (u) [left=of FMU] {$p_i$} edge [->] (FMU);
 \node (y) [right=of FMU] {$p_o$} edge [<-] (FMU);
 % \node (xdot) [below=of FMU, xshift=0.75cm] {$\dot{u}$} edge [<-] (FMU.south -| xdot);
 % \node (x) [below=of FMU, xshift=-0.75cm] {$u$} edge [->] (FMU.south -| x);
-\node (OR) [below=1.5cm of FMU] {OR};
-\node (CS) [right=of OR, draw=black, label={[name=CSL]below:\footnotesize Co-Simulation}] {\shortstack{Internal\\Solver}};
-
-\node (ME) [left=of OR, draw=black, label={[name=MEL]below:\footnotesize\bfseries Model Exchange}] {\shortstack{\bfseries External\\ \bfseries Solver}};
-\node (solver) [fit=(MEL) (ME) (CSL) (CS) (OR), draw=black] {};
-\draw[->] (FMU.south -| CS) -| node [near end, auto] {$\dot{u}$} node [near end, auto, swap] {\footnotesize \shortstack{event\\indicators}} (solver.north -| CS);
-\draw[->] (solver.north -| ME) -| node [near end, auto, swap] {$u$} node [near end, auto] {\footnotesize \shortstack{event\\triggers}} (FMU.south -| ME);
+\node (ME) [below=1cm of FMUeq, draw=black, label={[name=MEL]below:\footnotesize Model Exchange}] {External Solver};
+\coordinate (e1) at ($(FMUeq.south east)!0.5!(FMUeq.south)$ |- ME.north);
+\coordinate (e2) at ($(FMUeq.south west)!0.5!(FMUeq.south)$ |- ME.north);
+\draw [->] (e1) -- node [auto, swap, yshift=-1mm] {$\dot{u}$} node [auto, yshift=-1mm] {\footnotesize \shortstack{event\\indicators}} ($(ME.north west)!(e1)!(ME.north east)$);
+\draw [<-] (e2) -- node [auto, yshift=-1mm] {$u$} node [auto, swap, yshift=-1mm] {\footnotesize \shortstack{event\\triggers}} ($(ME.north west)!(e2)!(ME.north east)$);
+% \draw[->] (FMU.south -| ME) -| node [near end, auto] {$\dot{u}$} node [near end, auto, swap] {\footnotesize \shortstack{event\\indicators}} (solver.north -| ME);
+% \draw[->] (solver.north -| ME) -| node [near end, auto, swap] {$u$} node [near end, auto] {\footnotesize \shortstack{event\\triggers}} (FMU.south -| ME);
 \end{tikzpicture}
-\caption{FMUs present a standardized interface for describing DAEs}
+\caption{FMUs present a standardized software interface for simulating ODEs. A solver can be bundled with the FMU (Co-Simulation) or the FMU may use an external solver (Model Exchange).}
 \label{fig:FMU}
 \end{figure}
 
-An FMU bundles a DAE model into a (binary) shared library and accompanying XML description of the model; this allows to call the model from other programs e.g. using Julia's \texttt{ccall} functionality.
+An FMU bundles an ODE model into a (binary) shared library and accompanying XML description of the model; this allows to call the model from other programs e.g. using Julia's \texttt{ccall} functionality.
 Within the Julia ecosystem, FMI.jl and related packages \cite{thummerer2021} provide powerful functionality for interacting with and simulating individual FMUs.
 While it is possible to combine FMUs with other (native Julia or FMU-based) models using aforementioned packages, this requires familiarity with the FMI standard and significant effort from the user to ensure correctness.
 FMIExchange.jl aims to simplify this process and make FMUs easier to use for an audience that is unfamiliar with the FMI standard.
@@ -77,7 +79,7 @@ The \texttt{p} argument is accessible both to callbacks and the dynamics functio
 Here, FMIExchange.jl differs from other packages, such as most packages in the SciML ecosystem, because the \texttt{p} argument is used to store time-varying quantities rather than parameters which are fixed during the simulation.
 
 To aid the user in composing simulations of the format in \cref{fig:simulation}, FMIExchange.jl provides i) functionality to combine dynamics functions $f_j$ into a DifferentialEquations.jl-compatible function \texttt{f} (with in-place and out-of-place methods), ii) predefined callbacks to automatically update model output between integration timesteps, and iii) human-readable address map generation functionality for both the \texttt{u} and \texttt{p} argument.
-FMIExchange.jl does not provide any simulation capabilities itself; it merely generates callbacks/dynamics functions\ldots to use in the DifferentialEquations.jl framework.
+FMIExchange.jl does not provide any simulation capabilities itself; it merely generates callbacks and dynamics functions to use in the DifferentialEquations.jl framework.
 In this manner, the user retains the full flexibility of the DifferentialEquations.jl interface: it is possible to use the capabilities of FMIExchange.jl to compose some models, and bypass it for other models in that same simulation.
 This flexibility includes the ability to reintroduce fixed simulation parameters back into the \texttt{p} vector if so desired.
 
@@ -88,16 +90,18 @@ This flexibility includes the ability to reintroduce fixed simulation parameters
 \end{figure}
 
 For the addressing and state/input/output bundling functionality, FMIExchange.jl relies on custom types \texttt{AbstractSimModel} and \texttt{AbstractModelSpecification}.
-Addresses in the form of indices of \texttt{p}/\texttt{u} and model functionality (dynamics function\ldots) are contained in the \texttt{AbstractSimModel}.
+Addresses in the form of indices of \texttt{p}/\texttt{u} and model functionality (dynamics function and callbacks) are contained in the \texttt{AbstractSimModel}.
 The \texttt{AbstractSimModel} (or a vector of them) is used when bundling the dynamics functions and generating callbacks for automatically calling model output functions between integration steps.
 To avoid having to manually assign addresses and provide a human-friendly interface, FMIExchange.jl can automatically generate address maps from human-readable \texttt{AbstractModelSpecification}s.
 \texttt{AbstractModelSpecification}s specify states/inputs/outputs by name rather than address and can be converted directly into \texttt{AbstractSimModel}s using an address map.
+For a practical example of a workflow, consult \cite{bex2024}.
 
 \section{FMU Utilities}
 Function Mock-Up Units are merely a special kind of model to include in a simulation.
 As such, all functionality from \cref{sec:composition} is the same for native ODE models and ME-FMU models.
 However, if not using FMIExchange.jl, correctly handling integration of ME-FMUs requires the user to interact directly with the FMU code object as implemented by the FMI.jl package which adheres strictly to the FMI standard.
 FMIExchange.jl handles this for the user and does not require any familiarity with FMI.jl or the FMI standard.
+Note that it is possible to simulate multiple FMUs and native ODEs using solely FMI.jl and DifferentialEquations.jl, but FMIExchange.jl greatly simplifies this process through its \texttt{AbstractSimModel} interface.
 The FMU-handling functionality can be used on its own or together with the simulation composition functionality in \cref{sec:composition}.
 
 FMIExchange.jl exposes all FMU states/inputs/outputs in the \texttt{u} and \texttt{p} variables for easy access.

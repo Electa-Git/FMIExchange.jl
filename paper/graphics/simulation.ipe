@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70218" creator="Ipe 7.2.30">
-<info created="D:20231211154037" modified="D:20241023144408" tex="luatex"/>
+<info created="D:20231211154037" modified="D:20251125150258" tex="luatex"/>
 <preamble>\usepackage{tikz}
 \usepackage[scaled=0.92]{helvet}
 \usepackage[OT1]{fontenc}
@@ -381,7 +381,7 @@ h
 332 760 l
 332 672 l
 </path>
-<text transformations="translations" pos="424 720" stroke="black" type="label" width="25.863" height="6.804" depth="0.13" valign="baseline">Solver</text>
+<text matrix="1 0 0 1 -48 0" transformations="translations" pos="424 720" stroke="black" type="label" width="97.852" height="6.804" depth="0.13" valign="baseline">Simulation Environment</text>
 <path stroke="black" arrow="normal/normal">
 156 624 m
 156 744 l
