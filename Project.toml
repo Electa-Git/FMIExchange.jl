@@ -1,6 +1,6 @@
 name = "FMIExchange"
 uuid = "d0f58030-e4f1-4214-a600-bc055fa6d38e"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Cas Bex <cas.bex@kuleuven.be>"]
 
 [deps]
