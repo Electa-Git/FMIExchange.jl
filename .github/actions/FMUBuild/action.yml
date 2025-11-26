@@ -16,7 +16,7 @@ runs:
   steps:
     - id: dockerurl
       name: get docker repo url
-      uses: ASzc/change-string-case-action@v1
+      uses: ASzc/change-string-case-action@v6
       with:
         string: ${{ github.actor }}/${{ github.event.repository.name }}
 
@@ -47,7 +47,7 @@ runs:
 
     - id: lowercasetag
       name: "Make the docker tag lower case"
-      uses: ASzc/change-string-case-action@v1
+      uses: ASzc/change-string-case-action@v6
       with:
           string: ${{ env.DOCKERTAG }}
 
@@ -58,12 +58,12 @@ runs:
 
     - name: rename output
       shell: bash
-      run: mv -n deps/fmu.tar.gz $DST
+      run: mv -n deps/fmu.tar.gz $DST || echo "Target destination = source destination, skipping..."
       env:
         DST: ${{ inputs.file_name }}
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.file_name }}

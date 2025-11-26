@@ -4,15 +4,15 @@
 # https://github.com/ThummeTo/FMI.jl/blob/v0.11.2/LICENSE
 
 # The BSD 3-Clause License applies to the modifications made.
-# Copyright (c) 2024 KU LEUVEN 
+# Copyright (c) 2024 KU LEUVEN
 # See LICENSE file in the FMIExchange.jl project root for details
 
 function evalFMU!(c::FMU2Component, u::Vector{fmi2Real}, p::Vector{fmi2Real}, t::Real, input_refs::AbstractVector{fmi2ValueReference})
     @assert c.state == fmi2ComponentStateContinuousTimeMode "evalFMU!(...): Must be called in mode continuous time."
-    fmi2SetContinuousStates(c, copy(u); force=true)
-    fmi2SetTime(c, t; force=true)
+    fmi2SetContinuousStates(c, copy(u); force = true)
+    fmi2SetTime(c, t; force = true)
     isnothing(p) || isempty(p) || fmi2SetReal(c, input_refs, p)
-    fmi2CompletedIntegratorStep(c, fmi2True) 
+    fmi2CompletedIntegratorStep(c, fmi2True)
     fmi2EnterEventMode(c)
     handleEvents(c)
 end
@@ -41,18 +41,18 @@ function affectFMU!(dst::Vector{fmi2Real}, c::FMU2Component, x::Vector{fmi2Real}
         copyto!(dst, x)
     end
     if idx != -1 # -1 no event, 0, time event, >=1 state event with indicator
-        push!(c.solution.events, FMU2Event(t, UInt64(idx), copy(x), copy(dst)))
+        push!(c.solution.events, FMUEvent(t, UInt64(idx), copy(x), copy(dst)))
     end
     return nothing
 end
 
 function condition!(
-    out::Vector{fmi2Real},
-    c::FMU2Component,
-    x::Vector{fmi2Real},
-    u::Vector{fmi2Real},
-    t::fmi2Real,
-    input_refs,
+        out::Vector{fmi2Real},
+        c::FMU2Component,
+        x::Vector{fmi2Real},
+        u::Vector{fmi2Real},
+        t::fmi2Real,
+        input_refs,
     )
     @assert c.state == fmi2ComponentStateContinuousTimeMode "condition(...): Must be called in mode continuous time."
     c.solution.evals_condition += 1
@@ -81,7 +81,7 @@ end
 function time_choice(c::FMU2Component, start, stop)
     c.solution.evals_timechoice += 1
     if c.eventInfo.nextEventTimeDefined == fmi2True && c.eventInfo.nextEventTime >= start && c.eventInfo.nextEventTime <= stop
-            return c.eventInfo.nextEventTime
+        return c.eventInfo.nextEventTime
     else
         return nothing
     end
@@ -96,7 +96,7 @@ function get_time_callbacks(model::CachedModel{<:CachedFMU2}, start, stop)
         (integrator) -> time_choice(model.f.c, start, stop),
         (integrator) -> affectFMU!(model, integrator, 0),
         initial_affect = (model.f.c.eventInfo.nextEventTime == start),
-        save_positions=(true,true)
+        save_positions = (true, true)
     )
 end
 
@@ -114,8 +114,8 @@ function get_state_callbacks(model::CachedModel{<:CachedFMU2})
         (integrator, idx) -> affectFMU!(model, integrator, idx),
         Int64(md(model.f).numberOfEventIndicators);
         rootfind = SciMLBase.RightRootFind,
-        save_positions=(true,true),
-        interp_points=config(model.f).rootSearchInterpolationPoints
+        save_positions = (true, true),
+        interp_points = config(model.f).rootSearchInterpolationPoints
     )
 end
 
@@ -127,14 +127,15 @@ function get_step_callbacks(model::CachedModel{<:CachedFMU2})
     return FunctionCallingCallback(
         (_, _, integrator) -> stepCompleted!(model, integrator);
         func_everystep = true,
-        func_start = true)
+        func_start = true
+    )
 end
 
 function get_callbacks(model::CachedModel{<:CachedFMU2}, start, stop)
     fmu = model.f.fmu
-    handle_time_callbacks  = fmu.hasTimeEvents && fmu.executionConfig.handleTimeEvents 
-    handle_state_callbacks = fmu.hasStateEvents && fmu.executionConfig.handleStateEvents 
-    handle_step_callbacks  = fmu.hasStateEvents || fmu.hasTimeEvents
+    handle_time_callbacks = fmu.hasTimeEvents && fmu.executionConfig.handleTimeEvents
+    handle_state_callbacks = fmu.hasStateEvents && fmu.executionConfig.handleStateEvents
+    handle_step_callbacks = fmu.hasStateEvents || fmu.hasTimeEvents
     handle_input_callbacks = handle_state_callbacks
 
     cbs = SciMLBase.DECallback[]

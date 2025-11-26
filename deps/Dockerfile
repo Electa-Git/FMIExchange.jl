@@ -1,10 +1,10 @@
-FROM ubuntu:latest as setup
+FROM ubuntu:24.04 as setup
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 # Install omc build dependencies
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     build-essential \
     ccache \
     git \
@@ -31,14 +31,13 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM setup as omc_build
-RUN git clone --recurse-submodules https://github.com/OpenModelica/OpenModelica.git && \
+RUN git clone --depth 1 --branch v1.25.5 --recurse-submodules https://github.com/OpenModelica/OpenModelica.git && \
     cd OpenModelica && \
-    git checkout v1.23.0-dev && \
     git submodule update --force --init --recursive
 
 RUN cd OpenModelica && \
     cmake -S . -B build_cmake -DOM_ENABLE_GUI_CLIENTS=OFF -DOM_OMC_ENABLE_IPOPT=OFF -DOM_OMC_ENABLE_FORTRAN=OFF && \
-    cmake --build build_cmake --target install --parallel $(nproc)
+    cmake --build build_cmake --target install
 
 FROM setup as modelica_libs
 RUN git config --global advice.detachedHead false
@@ -51,7 +50,7 @@ RUN mv ~/.openmodelica/libraries/IDEASlib/IDEAS ~/.openmodelica/libraries/
 RUN mv ~/.openmodelica/libraries/moped/MoPED ~/.openmodelica/libraries/
 RUN mv ~/.openmodelica/libraries/ModelicaStandardLibrary/Modelica ~/.openmodelica/libraries/
 
-FROM ubuntu:latest
+FROM ubuntu:24.04
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     build-essential \

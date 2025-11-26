@@ -1,4 +1,4 @@
-@testset "Second Order Plant" begin 
+@testset "Second Order Plant" begin
 
     start = 0.0
     stop = 10.0
@@ -22,21 +22,24 @@
 
     ios, xs = address_map([plantspec, s_spec])
 
-    icb = PeriodicCallback(stop/100.0) do integrator
+    icb = PeriodicCallback(stop / 100.0) do integrator
         inp = sin(2π * integrator.t / stop)
         integrator.p[ios[:u]] = inp
         integrator.p[ios[:su]] = inp
     end
 
-    model = create_model([plantspec,s_spec]; start=start, stop=stop)
+    model = create_model([plantspec, s_spec]; start = start, stop = stop)
     cbs = reduce(vcat, get_callbacks.(model, start, stop))
     push!(cbs, output_callback(model))
     push!(cbs, link_models(:y, :sy, ios))
     push!(cbs, icb)
-    sol = solve(ODEProblem{false}(dynamics(model), Float64[0.0, 1.0, 0.0, 1.0], (start, stop), zeros(6)),
-                AutoTsit5(Rosenbrock23(autodiff=false)), callback=CallbackSet(cbs...))
+    sol = solve(
+        ODEProblem{false}(dynamics(model), Float64[0.0, 1.0, 0.0, 1.0], (start, stop), zeros(6)),
+        AutoTsit5(Rosenbrock23(autodiff = ADTypes.AutoFiniteDiff())),
+        callback = CallbackSet(cbs...)
+    )
 
     tsteps = start:0.01:stop
-    mse = sum(map(x->sum(abs2, x[1:2]-x[3:4]), sol.(tsteps))) / length(tsteps)
-    @test mse < 1e-3
+    mse = sum(map(x -> sum(abs2, x[1:2] - x[3:4]), sol.(tsteps))) / length(tsteps)
+    @test mse < 1.0e-3
 end

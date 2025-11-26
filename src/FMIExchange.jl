@@ -2,12 +2,14 @@ module FMIExchange
 
 using FMICore
 using FMIImport
+using FMIBase
 using SciMLBase
 using DiffEqCallbacks
 using Requires
 
-import FMIImport: prepareSolveFMU, handleEvents, fmi2EnterEventMode, FMU2Event
-import FMICore: fmi2True, fmi2SetContinuousStates, fmi2SetTime, fmi2SetReal, fmi2ComponentStateContinuousTimeMode, fmi2ValueReference, FMU2Solution, undual
+import FMIImport: prepareSolveFMU, handleEvents, fmi2EnterEventMode
+import FMICore: fmi2True, fmi2SetContinuousStates, fmi2SetTime, fmi2SetReal, fmi2ValueReference
+import FMIBase: fmi2ComponentStateContinuousTimeMode, FMUSolution, FMUEvent
 
 include(joinpath(@__DIR__, "FMU.jl"))
 include(joinpath(@__DIR__, "SimModel.jl"))

@@ -8,18 +8,19 @@ For this tutorial we will need [OrdinaryDiffEq.jl](https://docs.sciml.ai/Ordinar
 using FMIExchange
 using OrdinaryDiffEq
 using Plots
+import ADTypes
 ```
 
 To initialise the FMU, we must provide the path to the FMU, its inputs, outputs and states and the simulation start and stop times.
 If we wish to change the parameters of the FMU we can do this by providing a dictionary of parameter-value pairs.
 ```@example bb
-bbloc = joinpath("deps", "fmu", "BouncingBall2D.fmu") # fmu file location
-bbloc = joinpath(@__DIR__, "..", "..", "deps", "fmu", "BouncingBall2D.fmu") # hide
+bbloc = joinpath("deps", "BouncingBall2D.fmu") # fmu file location
+bbloc = joinpath(@__DIR__, "..", "..", "deps", "BouncingBall2D.fmu") # hide
 bbstart = 0.0 # simulation start
 bbstop = 10.0 # simulation stop
 bbins = String[] # FMU inputs (this FMU has none)
 bbouts = String[] # FMU outputs (this FMU has none)
-bbstates = ["dx", "dy", "x", "y"] # FMU states
+bbstates = ["active_x", "active_y", "dx", "dy", "x", "y"] # FMU states
 bbparameters = Dict("eps"=>1e-2) # FMU parameters (optional)
 nothing # hide
 ```
@@ -36,15 +37,15 @@ nothing # hide
 
 Let's simulate the FMU with the default solver.
 ```@example bb
-u0 = [1.0, 0.0, 0.5, 1.0]
+u0 = [1.0, 1.0, 1.0, 0.0, 0.5, 1.0]
 p0 = Float64[]
 tspan = (bbstart, bbstop)
 
 sol = solve(
     ODEProblem(model, u0, tspan, p0),
-    AutoTsit5(Rosenbrock23(autodiff=false)),
+    AutoTsit5(Rosenbrock23(autodiff=ADTypes.AutoFiniteDiff())),
 )
-plot(sol, idxs=(3,4), legend=false)
+plot(sol, idxs=(5,6), legend=false)
 savefig("nocb.png"); nothing # hide
 ```
 ![](nocb.png)
@@ -57,11 +58,12 @@ If we include them, the ball behaves as expected.
 cbs = get_callbacks(model, bbstart, bbstop)
 sol = solve(
     ODEProblem(model, u0, tspan, p0),
-    AutoTsit5(Rosenbrock23(autodiff=false)),
+    AutoTsit5(Rosenbrock23(autodiff=ADTypes.AutoFiniteDiff())),
     saveat=bbstart:0.01:bbstop, # for a nicer plot
-    callback=CallbackSet(cbs...)
+    callback=CallbackSet(cbs...),
+	dtmax=0.01
 )
-plot(sol, idxs=(3,4), legend=false)
+plot(sol, idxs=(5,6), legend=false)
 savefig("cb.png"); nothing # hide
 ```
 ![](cb.png)
@@ -78,14 +80,15 @@ using FMIExchange
 using LinearAlgebra
 using OrdinaryDiffEq
 using Plots
+import ADTypes
 
 bbloc = joinpath("deps", "fmu", "BouncingBall2D.fmu") # fmu file location
-bbloc = joinpath(@__DIR__, "..", "..", "deps", "fmu", "BouncingBall2D.fmu") # hide
+bbloc = joinpath(@__DIR__, "..", "..", "deps", "BouncingBall2D.fmu") # hide
 bbstart = 0.0 # simulation start
 bbstop = 10.0 # simulation stop
 bbins = String[] # FMU inputs (this FMU has none)
 bbouts = String[] # FMU outputs (this FMU has none)
-bbstates = ["dx", "dy", "x", "y"] # FMU states
+bbstates = ["active_x", "active_y", "dx", "dy", "x", "y"] # FMU states
 bb_radius = 0.1
 bbparameters = Dict("eps"=>1e-2, "r" => bb_radius) # FMU parameters (optional)
 nothing # hide
@@ -175,6 +178,8 @@ This is because `models` is not an `AbstractSimModel`, but rather a `Vector{Abst
 `dynamics(models)` automatically generates an [OrdinaryDiffEq.jl](https://docs.sciml.ai/OrdinaryDiffEq/stable/)-compatible function that combines the ODEs of both models.
 ```@example ss
 u0 = zeros(length(keys(umap)))
+u0[umap["active_x"]] = 1.0
+u0[umap["active_y"]] = 1.0
 u0[umap["x"]] = 0.5
 u0[umap["dx"]] = 0.5
 u0[umap["y"]] = 1.0
@@ -185,18 +190,19 @@ p0 = Float64[0.2, 0.2]
 tspan = (bbstart, bbstop)
 sol = solve(
     ODEProblem(dynamics(models), u0, tspan, p0),
-    AutoTsit5(Rosenbrock23(autodiff=false)),
+    AutoTsit5(Rosenbrock23(autodiff=ADTypes.AutoFiniteDiff())),
     callback=CallbackSet(
         reduce(vcat, get_callbacks.(models, bbstart, bbstop))...,
         screencb,
         collision_cb
     ),
-    dtmax=0.01 # The collision callback may give errors when using large steps
+    dtmax=0.001 # The collision callback may give errors when using large steps
 ) 
 nothing # hide
 ```
 
 We can plot the solution as a nice animation.
+
 ```@example ss
 import Logging # hide
 Logging.disable_logging(Logging.Info) # hide
