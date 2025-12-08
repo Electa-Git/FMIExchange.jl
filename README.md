@@ -100,6 +100,13 @@ It is possible to download the compiled FMUs from the Github workflow runs of th
 First extract all FMUs to `deps/fmu/`, then run tests as normal.
 It is possible that these FMUs do not work on your architecture / OS, in which case you will have to [generate the FMUs manually](###-Generating-Test-FMUs).
 
+## Reporting Issues and/or Contributing
+
+Please report any bugs or unexpected behavior by submitting an issue in this repository. Include any relevant details to help maintainers address the problem quickly.
+
+If you would like to contribute to this software, feel free to open a pull request describing your feature or fix, along with a clear explanation of the solution you implemented. Contributions of all sizes are welcome.
+
+
 ## License
 The package is available under the BSD 3-clause license [here](./LICENSE). 
 FMIExchange.jl was developed at KU Leuven - Electa by Lucas Bex.
