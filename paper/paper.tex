@@ -29,6 +29,7 @@ Additionally, FMIExchange.jl provides tools to compose simulations combining mul
 \section{Statement of Need}
 The Functional Mock-up Interface (FMI) standard \cite{modelicaassociation} presents a standardised software interface for simulating an ordinary differential equation (ODE) with events to enhance interoperability of simulation and modelling tools.
 Many differential algebraic equation (DAE) modelling tools have the possibility to export models (after transformation to an ODE) to Functional Mock-Up Units (FMU, \cref{fig:FMU}), which comply with this interface.
+This standardisation allows to  co-simulate multiple dynamic models in a different software environment from the one they were developed in.
 
 FMUs define a set of states states $u$ and inputs $p_i$ required for simulating the model \cref{eq:ODE}, as well as a set of outputs $p_o$ \cref{eq:output} which are exposed to the user.
 FMUs may contain events, that cause discontinuouties in the solution of the ODE.
@@ -76,11 +77,11 @@ Additionally, some functionality is provided to simplify composing multiple (FMU
 To compose multiple models in a simulation, their inputs/outputs must be appropriately connected to each other and all dynamics must be bundled into a single function of the form \texttt{f(u, p, t)} or \texttt{f!(du, u, p, t)} and a set of callbacks.
 To this end, FMIExchange.jl works with the simulation model depicted in \cref{fig:simulation}: all model states $u_j$ are bundled in a flat \texttt{u} vector; model inputs/outputs are connected through an intermediate buffer which is the parameter \texttt{p} argument in \texttt{f}.
 The \texttt{p} argument is accessible both to callbacks and the dynamics functions and thus this approach allows for the most flexibility in composing simulations.
-Here, FMIExchange.jl differs from other packages, such as most packages in the SciML ecosystem, because the \texttt{p} argument is used to store time-varying quantities rather than parameters which are fixed during the simulation.
+Here, FMIExchange.jl differs from other packages, such as most packages in the SciML ecosystem: the \texttt{p} argument is used to store time-varying quantities rather than parameters which are fixed during the simulation.
 
 To aid the user in composing simulations of the format in \cref{fig:simulation}, FMIExchange.jl provides i) functionality to combine dynamics functions $f_j$ into a DifferentialEquations.jl-compatible function \texttt{f} (with in-place and out-of-place methods), ii) predefined callbacks to automatically update model output between integration timesteps, and iii) human-readable address map generation functionality for both the \texttt{u} and \texttt{p} argument.
-FMIExchange.jl does not provide any simulation capabilities itself; it merely generates callbacks and dynamics functions to use in the DifferentialEquations.jl framework.
-In this manner, the user retains the full flexibility of the DifferentialEquations.jl interface: it is possible to use the capabilities of FMIExchange.jl to compose some models, and bypass it for other models in that same simulation.
+FMIExchange.jl does not provide any simulation capabilities itself; it generates callbacks and dynamics functions to use in the DifferentialEquations.jl framework.
+As such, the user retains the full flexibility of the DifferentialEquations.jl interface: it is possible to use FMIExchange.jl to compose some models, and bypass it for other models in that same simulation.
 This flexibility includes the ability to reintroduce fixed simulation parameters back into the \texttt{p} vector if so desired.
 
 \begin{figure}
@@ -94,7 +95,11 @@ Addresses in the form of indices of \texttt{p}/\texttt{u} and model functionalit
 The \texttt{AbstractSimModel} (or a vector of them) is used when bundling the dynamics functions and generating callbacks for automatically calling model output functions between integration steps.
 To avoid having to manually assign addresses and provide a human-friendly interface, FMIExchange.jl can automatically generate address maps from human-readable \texttt{AbstractModelSpecification}s.
 \texttt{AbstractModelSpecification}s specify states/inputs/outputs by name rather than address and can be converted directly into \texttt{AbstractSimModel}s using an address map.
-For a practical example of a workflow, consult \cite{bex2024}.
+
+The demo \cite{bex2024} provides a practical example of a FMIExchange.jl worklflow.
+The demo implements a model-predictive (MPC) and a rule-based controller for a household energy system.
+In this demo, there is some model mismatch between the optimisation model of the MPC and the physical system.
+The effect of this model mismatch is through dynamic simulation of the system.
 
 \section{FMU Utilities}
 Function Mock-Up Units are merely a special kind of model to include in a simulation.
@@ -103,13 +108,12 @@ However, if not using FMIExchange.jl, correctly handling integration of ME-FMUs 
 FMIExchange.jl handles this for the user and does not require any familiarity with FMI.jl or the FMI standard.
 Note that it is possible to simulate multiple FMUs and native ODEs using solely FMI.jl and DifferentialEquations.jl, but FMIExchange.jl greatly simplifies this process through its \texttt{AbstractSimModel} interface.
 The FMU-handling functionality can be used on its own or together with the simulation composition functionality in \cref{sec:composition}.
+FMIExchange.jl is currently compatible with FMI version 2 \cite{modelicaassociation2022}.
 
 FMIExchange.jl exposes all FMU states/inputs/outputs in the \texttt{u} and \texttt{p} variables for easy access.
 Additionally, FMIExchange.jl can generate dynamics functions and callbacks that correctly embed the FMU in a DifferentialEquations.jl simulation.
 The functionality includes: handling time-based, state-based and input-based FMU events, switching between FMU modes for calculating derivatives/calculating events/finishing integration steps, and automatically recalculating FMU outputs after an integration step.
-Finally, FMIExchange.jl implements the \texttt{CachedModel} struct which preallocates caches to avoid excessive memory allocations at each \texttt{ccall} call to the FMU.
-
-FMIExchange.jl is currently only compatible with FMI version 2 \cite{modelicaassociation2022}.
+Finally, FMIExchange.jl preallocates and reuses caches to avoid excessive memory allocations at each \texttt{ccall} call to the FMU.
 
 \section{Conclusion}
 FMIExchange.jl simplifies composing complex simulations with multiple interacting ODE models that are implemented either in Julia or as a Functional Mock-up Unit.
